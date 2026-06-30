@@ -92,6 +92,35 @@ describe SSHData::Signature do
     end
   end
 
+  describe "#verify ML-DSA-44/Ed25519 signatures" do
+    let(:signature) { read_fixture_file("message.mldsa44-ed25519.sig") }
+
+    it "parses correctly" do
+      sig_algo, raw_sig, = SSHData::Encoding.decode_signature(subject.signature)
+
+      expect(subject.sigversion).to eq(1)
+      expect(subject.namespace).to eq("file")
+      expect(subject.reserved).to be_empty
+      expect(subject.hash_algorithm).to eq("sha512")
+      expect(subject.public_key).to be_a(::SSHData::PublicKey::MLDSA44ED25519)
+      expect(sig_algo).to eq(SSHData::PublicKey::ALGO_MLDSA44ED25519)
+      expect(raw_sig.bytesize).to eq(SSHData::PublicKey::MLDSA44ED25519::COMPOSITE_SIGNATURE_SIZE)
+    end
+
+    it "verifies with data" do
+      skip "ML-DSA-44 is not supported by this OpenSSL" unless SSHData::PublicKey::MLDSA44ED25519.enabled?
+
+      expect(subject.verify(message)).to be(true)
+    end
+
+    it "does not verify with tampered data" do
+      skip "ML-DSA-44 is not supported by this OpenSSL" unless SSHData::PublicKey::MLDSA44ED25519.enabled?
+
+      bad_data = message + "bad"
+      expect(subject.verify(bad_data)).to be(false)
+    end
+  end
+
   describe "#verify security keys" do
     where(:path) { Dir["spec/fixtures/signatures/message.*-sk-*no-options-individual.sig"] }
 

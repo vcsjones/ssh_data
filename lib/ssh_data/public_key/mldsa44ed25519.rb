@@ -13,22 +13,10 @@ module SSHData
 
       COMPOSITE_PREFIX = "CompositeAlgorithmSignatures2025"
       COMPOSITE_LABEL = "COMPSIG-MLDSA44-Ed25519-SHA512"
+      MIN_OPENSSL_VERSION = 0x30500000
 
       def self.enabled?
-        return @enabled unless @enabled.nil?
-
-        version =
-          if OpenSSL.const_defined?(:OPENSSL_LIBRARY_VERSION)
-            OpenSSL::OPENSSL_LIBRARY_VERSION
-          else
-            OpenSSL::OPENSSL_VERSION
-          end
-
-        @enabled =
-          version[/\d+\.\d+\.\d+/]
-            &.split(".")
-            &.map(&:to_i)
-            &.then { |v| (v <=> [3, 5, 0]) >= 0 } || false
+        OpenSSL::OPENSSL_VERSION_NUMBER >= MIN_OPENSSL_VERSION
       end
 
       def self.openssl_required!
@@ -72,6 +60,7 @@ module SSHData
         mldsa_sig = raw_sig.byteslice(0, MLDSA_SIGNATURE_SIZE)
         ed25519_sig = raw_sig.byteslice(MLDSA_SIGNATURE_SIZE, ED25519_SIGNATURE_SIZE)
 
+        # The composite signatures draft explicitly permits verification to fail early, so it's okay to short-circuit here.
         mldsa_key.verify(nil, mldsa_sig, m_prime, "context-string" => COMPOSITE_LABEL) &&
           ed25519_key.verify(nil, ed25519_sig, m_prime)
       end
