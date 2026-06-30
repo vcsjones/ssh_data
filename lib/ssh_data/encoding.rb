@@ -93,6 +93,11 @@ module SSHData
       [:application, :string]
     ]
 
+    # Fields in a ML-DSA-44/Ed25519 composite public key
+    MLDSA44ED25519_KEY_FIELDS = [
+      [:pk, :string]
+    ]
+
     PUBLIC_KEY_ALGO_BY_CERT_ALGO = {
       Certificate::ALGO_RSA        => PublicKey::ALGO_RSA,
       Certificate::ALGO_DSA        => PublicKey::ALGO_DSA,
@@ -124,6 +129,7 @@ module SSHData
       PublicKey::ALGO_ED25519  => ED25519_KEY_FIELDS,
       PublicKey::ALGO_SKED25519 => SKED25519_KEY_FIELDS,
       PublicKey::ALGO_SKECDSA256 => SKECDSA_KEY_FIELDS,
+      PublicKey::ALGO_MLDSA44ED25519 => MLDSA44ED25519_KEY_FIELDS,
     }
 
     KEY_FIELDS_BY_PRIVATE_KEY_ALGO = {
